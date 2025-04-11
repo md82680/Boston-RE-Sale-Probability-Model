@@ -1,7 +1,7 @@
 """Pydantic models for the API."""
 
-from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Dict
+from pydantic import BaseModel, Field
+from typing import List, Dict
 import datetime
 
 class Property(BaseModel):

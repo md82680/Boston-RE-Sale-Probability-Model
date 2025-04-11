@@ -1,8 +1,7 @@
 """API endpoints for the property sale prediction service."""
 
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 import pandas as pd
-import numpy as np
 import pickle
 import os
 import sys

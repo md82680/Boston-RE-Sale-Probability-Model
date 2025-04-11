@@ -1,6 +1,6 @@
 """Main FastAPI application for the property sale prediction API."""
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
