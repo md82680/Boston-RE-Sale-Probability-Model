@@ -1,6 +1,6 @@
 """Pydantic models for the API."""
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, validator
 from typing import List, Dict
 import datetime
 import re
@@ -25,8 +25,8 @@ class Property(BaseModel):
     market_inventory_months: float = Field(..., ge=0)
     avg_days_on_market: int = Field(..., ge=0)
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "years_owned": 15,
                 "property_value": 750000,
@@ -46,7 +46,6 @@ class Property(BaseModel):
                 "avg_days_on_market": 30
             }
         }
-    }
 
 
 class BatchPropertyRequest(BaseModel):
@@ -54,7 +53,7 @@ class BatchPropertyRequest(BaseModel):
     
     properties: List[Property]
     
-    @field_validator('properties')
+    @validator('properties')
     def check_not_empty(cls, v):
         if len(v) == 0:
             raise ValueError('Properties list cannot be empty')
@@ -68,7 +67,7 @@ class PredictionResponse(BaseModel):
     prediction_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     model_version: str = "1.0.0"
     
-    @field_validator('model_version')
+    @validator('model_version')
     def check_version_format(cls, v):
         if not re.match(r'^\d+\.\d+\.\d+$', v):
             raise ValueError('Model version must be in format X.Y.Z')
@@ -82,13 +81,13 @@ class BatchPredictionResponse(BaseModel):
     prediction_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     model_version: str = "1.0.0"
     
-    @field_validator('predictions')
+    @validator('predictions')
     def check_probabilities(cls, v):
         if any(p < 0 or p > 1 for p in v):
             raise ValueError('All probabilities must be between 0 and 1')
         return v
     
-    @field_validator('model_version')
+    @validator('model_version')
     def check_version_format(cls, v):
         if not re.match(r'^\d+\.\d+\.\d+$', v):
             raise ValueError('Model version must be in format X.Y.Z')

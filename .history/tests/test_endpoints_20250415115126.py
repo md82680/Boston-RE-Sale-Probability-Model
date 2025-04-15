@@ -41,12 +41,47 @@ def test_invalid_batch_data(client):
     response = client.post("/api/predict/batch", json=invalid_data)
     assert response.status_code == 422
 
-def test_logging_single_prediction(client, sample_property):
-    response = client.post("/api/predict", json=sample_property)
-    assert response.status_code == 200
-    # No log checking, just verify the endpoint works
+def test_logging_single_prediction(client, sample_property, tmp_path):
+    # Directly modify the endpoint's logging path for testing
+    import api.endpoints as endpoints
+    
+    # Store original path to restore later
+    original_log_dir = "logs/predictions"
+    
+    # Point log output to our test directory
+    os.makedirs(str(tmp_path), exist_ok=True)
+    endpoints.log_prediction.log_dir = str(tmp_path)
+    
+    try:
+        response = client.post("/api/predict", json=sample_property)
+        assert response.status_code == 200
+        
+        # Force execution of background tasks
+        task_data = response.headers.get("X-Fastapi-Background-Tasks-Count")
+        
+        # Wait a moment for logging to complete
+        import time
+        time.sleep(0.1)
+        
+        # Check for log file - look for single_predictions.log in tmp_path
+        log_file = tmp_path / "single_predictions.log"
+        assert log_file.exists(), f"Log file not found at {log_file}"
+        log_content = log_file.read_text()
+        assert "Prediction:" in log_content
+    finally:
+        # Restore original logging path
+        endpoints.log_prediction.log_dir = original_log_dir
 
-def test_logging_batch_predictions(client, sample_batch_properties):
+def test_logging_batch_predictions(client, sample_batch_properties, tmp_path):
+    # Similar to above but for batch predictions
+    import logging
+    log_file = tmp_path / "batch_predictions.log"
+    handler = logging.FileHandler(str(log_file))
+    logging.getLogger().addHandler(handler)
+
     response = client.post("/api/predict/batch", json=sample_batch_properties)
     assert response.status_code == 200
-    # No log checking, just verify the endpoint works
+    
+    assert log_file.exists()
+    log_content = log_file.read_text()
+    assert "Batch prediction" in log_content

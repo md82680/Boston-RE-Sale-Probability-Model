@@ -1,21 +1,26 @@
 import pytest
 import os
 from fastapi.testclient import TestClient
+import logging
 from api.main import app
+from fastapi import FastAPI
 
-# Create required directories
+# Set up directories needed for tests
 os.makedirs("logs", exist_ok=True)
 os.makedirs("logs/predictions", exist_ok=True)
 
 @pytest.fixture
-def client():
-    """Create a test client for the API."""
-    with TestClient(app) as test_client:
-        yield test_client
+def app():
+    app = FastAPI()
+    app.include_router(router)
+    return app
+
+@pytest.fixture
+def client(app):
+    return TestClient(app)
 
 @pytest.fixture
 def sample_property():
-    """Sample property data matching the Property model requirements."""
     return {
         "years_owned": 15,
         "property_value": 750000,
@@ -37,7 +42,6 @@ def sample_property():
 
 @pytest.fixture
 def sample_batch_properties():
-    """Sample batch property data for testing."""
     return {
         "properties": [
             {

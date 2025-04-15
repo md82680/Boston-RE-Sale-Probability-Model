@@ -1,6 +1,5 @@
 import pytest  # noqa: F401
 from fastapi.testclient import TestClient #noqa: F401
-import os
 
 pytestmark = pytest.mark.api  # Mark all tests in this file with 'api' tag
 
@@ -41,12 +40,31 @@ def test_invalid_batch_data(client):
     response = client.post("/api/predict/batch", json=invalid_data)
     assert response.status_code == 422
 
-def test_logging_single_prediction(client, sample_property):
+def test_logging_single_prediction(client, sample_property, tmp_path):
+    # Configure logging to use temporary directory
+    import logging
+    log_file = tmp_path / "single_predictions.log"
+    handler = logging.FileHandler(str(log_file))
+    logging.getLogger().addHandler(handler)
+
     response = client.post("/api/predict", json=sample_property)
     assert response.status_code == 200
-    # No log checking, just verify the endpoint works
+    
+    # Check if log file was created and contains entry
+    assert log_file.exists()
+    log_content = log_file.read_text()
+    assert "Prediction:" in log_content
 
-def test_logging_batch_predictions(client, sample_batch_properties):
+def test_logging_batch_predictions(client, sample_batch_properties, tmp_path):
+    # Similar to above but for batch predictions
+    import logging
+    log_file = tmp_path / "batch_predictions.log"
+    handler = logging.FileHandler(str(log_file))
+    logging.getLogger().addHandler(handler)
+
     response = client.post("/api/predict/batch", json=sample_batch_properties)
     assert response.status_code == 200
-    # No log checking, just verify the endpoint works
+    
+    assert log_file.exists()
+    log_content = log_file.read_text()
+    assert "Batch prediction" in log_content

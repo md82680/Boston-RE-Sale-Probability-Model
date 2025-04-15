@@ -134,16 +134,11 @@ def log_prediction(property_data, prediction):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"{timestamp} - Prediction: {prediction:.4f} - Property: {property_data}\n"
         
-        # Use configurable log directory
-        log_dir = getattr(log_prediction, "log_dir", "logs/predictions")
-        os.makedirs(log_dir, exist_ok=True)
-        with open(os.path.join(log_dir, "single_predictions.log"), "a") as f:
+        os.makedirs("logs/predictions", exist_ok=True)
+        with open("logs/predictions/single_predictions.log", "a") as f:
             f.write(log_entry)
     except Exception as e:
         logger.error(f"Error logging prediction: {str(e)}")
-
-# Set default log directory
-log_prediction.log_dir = "logs/predictions"
 
 def log_batch_predictions(properties_data, predictions):
     """Log batch predictions to file system."""

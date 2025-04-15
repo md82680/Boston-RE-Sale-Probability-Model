@@ -1,17 +1,12 @@
 import pytest  # noqa: F401
-from fastapi.testclient import TestClient #noqa: F401
-import os
-
-pytestmark = pytest.mark.api  # Mark all tests in this file with 'api' tag
 
 def test_health_check(client):
-    response = client.get("/api/health")
+    response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy", "model_loaded": True}
 
 def test_predict_single_property(client, sample_property):
-    # sample_property should match the structure in Property model
-    response = client.post("/api/predict", json=sample_property)
+    response = client.post("/predict", json=sample_property)
     assert response.status_code == 200
     data = response.json()
     assert "sale_probability" in data
@@ -21,7 +16,7 @@ def test_predict_single_property(client, sample_property):
     assert 0 <= data["sale_probability"] <= 1
 
 def test_predict_batch_properties(client, sample_batch_properties):
-    response = client.post("/api/predict/batch", json=sample_batch_properties)
+    response = client.post("/predict/batch", json=sample_batch_properties)
     assert response.status_code == 200
     data = response.json()
     assert "predictions" in data
@@ -33,20 +28,39 @@ def test_predict_batch_properties(client, sample_batch_properties):
 
 def test_invalid_property_data(client):
     invalid_data = {"square_feet": "invalid"}
-    response = client.post("/api/predict", json=invalid_data)
+    response = client.post("/predict", json=invalid_data)
     assert response.status_code == 422
 
 def test_invalid_batch_data(client):
     invalid_data = {"properties": [{"square_feet": "invalid"}]}
-    response = client.post("/api/predict/batch", json=invalid_data)
+    response = client.post("/predict/batch", json=invalid_data)
     assert response.status_code == 422
 
-def test_logging_single_prediction(client, sample_property):
-    response = client.post("/api/predict", json=sample_property)
-    assert response.status_code == 200
-    # No log checking, just verify the endpoint works
+def test_logging_single_prediction(client, sample_property, tmp_path):
+    # Configure logging to use temporary directory
+    import logging
+    log_file = tmp_path / "single_predictions.log"
+    handler = logging.FileHandler(str(log_file))
+    logging.getLogger().addHandler(handler)
 
-def test_logging_batch_predictions(client, sample_batch_properties):
-    response = client.post("/api/predict/batch", json=sample_batch_properties)
+    response = client.post("/predict", json=sample_property)
     assert response.status_code == 200
-    # No log checking, just verify the endpoint works
+    
+    # Check if log file was created and contains entry
+    assert log_file.exists()
+    log_content = log_file.read_text()
+    assert "Prediction:" in log_content
+
+def test_logging_batch_predictions(client, sample_batch_properties, tmp_path):
+    # Similar to above but for batch predictions
+    import logging
+    log_file = tmp_path / "batch_predictions.log"
+    handler = logging.FileHandler(str(log_file))
+    logging.getLogger().addHandler(handler)
+
+    response = client.post("/predict/batch", json=sample_batch_properties)
+    assert response.status_code == 200
+    
+    assert log_file.exists()
+    log_content = log_file.read_text()
+    assert "Batch prediction" in log_content

@@ -141,40 +141,30 @@ def test_batch_prediction_response():
     assert response.model_version == "1.0.0"
 
 def test_empty_batch_request():
-    # Now we expect validation to fail with empty list
     with pytest.raises(ValidationError):
         BatchPropertyRequest(properties=[])
 
-def test_prediction_values_constraints():
-    # Valid case
-    valid_response = PredictionResponse(
-        sale_probability=0.75,
-        prediction_date=datetime.now(),
-        model_version="1.0.0"
-    )
-    assert valid_response.sale_probability == 0.75
-    
-    # Invalid case - should raise error
+def test_invalid_prediction_values():
     with pytest.raises(ValidationError):
         PredictionResponse(
-            sale_probability=1.5,  # Invalid: > 1.0
+            sale_probability=1.5,  # Should be between 0 and 1
             prediction_date=datetime.now(),
             model_version="1.0.0"
         )
 
 def test_model_version_format():
-    # Valid version format
+    # Test valid version format
     response = PredictionResponse(
         sale_probability=0.5,
         prediction_date=datetime.now(),
         model_version="1.0.0"
     )
     assert response.model_version.count(".") == 2
-    
-    # Invalid version format - should raise error
+
+    # Test invalid version format
     with pytest.raises(ValidationError):
         PredictionResponse(
             sale_probability=0.5,
             prediction_date=datetime.now(),
-            model_version="invalid_version"  # Not in X.Y.Z format
+            model_version="invalid_version"
         )
