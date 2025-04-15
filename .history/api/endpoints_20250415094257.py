@@ -88,7 +88,7 @@ async def predict_batch(batch_request: BatchPropertyRequest, background_tasks: B
     
     try:
         # Convert list of properties to DataFrame
-        properties_dicts = [prop.model_dump() for prop in batch_request.properties]
+        properties_dicts = [prop.dict() for prop in batch_request.properties]
         df = pd.DataFrame(properties_dicts)
         
         # Make predictions

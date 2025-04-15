@@ -64,7 +64,7 @@ async def predict_sale_probability(property_data: Property, background_tasks: Ba
         # Log this prediction (non-blocking)
         background_tasks.add_task(
             log_prediction, 
-            property_data.model_dump(), 
+            property_data.dict(), 
             prediction
         )
         
@@ -88,7 +88,7 @@ async def predict_batch(batch_request: BatchPropertyRequest, background_tasks: B
     
     try:
         # Convert list of properties to DataFrame
-        properties_dicts = [prop.model_dump() for prop in batch_request.properties]
+        properties_dicts = [prop.dict() for prop in batch_request.properties]
         df = pd.DataFrame(properties_dicts)
         
         # Make predictions
