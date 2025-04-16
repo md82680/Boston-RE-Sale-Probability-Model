@@ -18,12 +18,6 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p logs marketing monitoring/metrics visualizations/performance
 
-# Create monitoring directories
-RUN mkdir -p /app/monitoring/metrics /app/models
-
-# Set permissions
-RUN chmod -R 755 /app/monitoring/metrics
-
 # Expose the API port
 EXPOSE 8000
 

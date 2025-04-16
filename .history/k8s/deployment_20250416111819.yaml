@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: real-estate-predictor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: real-estate-predictor
+  template:
+    metadata:
+      labels:
+        app: real-estate-predictor
+    spec:
+      containers:
+      - name: backend
+        image: gcr.io/[YOUR-PROJECT-ID]/backend:latest
+        ports:
+        - containerPort: 8000
+          name: api
+        - containerPort: 9090
+          name: metrics
+        volumeMounts:
+        - name: ml-models
+          mountPath: /app/models
+        - name: monitoring-data
+          mountPath: /app/monitoring/metrics
+      
+      - name: frontend
+        image: gcr.io/[YOUR-PROJECT-ID]/frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://backend-service:8000"
+      
+      volumes:
+      - name: ml-models
+        persistentVolumeClaim:
+          claimName: ml-model-storage-claim
+      - name: monitoring-data
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: real-estate-predictor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: real-estate-predictor
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: real-estate-predictor-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: real-estate-predictor
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Add Prometheus configuration
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: real-estate-predictor-monitor
+spec:
+  selector:
+    matchLabels:
+      app: real-estate-predictor
+  endpoints:
+  - port: metrics
+    interval: 15s
+    path: /metrics
+  - port: ml-metrics
+    interval: 30s
+    path: /metrics/model-performance
+
+---
+# Add ConfigMap for monitoring configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+      - job_name: 'real-estate-predictor'
+        static_configs:
+          - targets: ['localhost:9090'] 

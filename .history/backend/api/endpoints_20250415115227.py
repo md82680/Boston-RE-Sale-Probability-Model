@@ -7,7 +7,6 @@ import os
 import sys
 import logging
 from datetime import datetime
-from monitoring.handlers import MetricsHandler
 
 # Import Pydantic models
 from .models import Property, BatchPropertyRequest, PredictionResponse, BatchPredictionResponse
@@ -55,9 +54,6 @@ async def predict_sale_probability(property_data: Property, background_tasks: Ba
     if model is None:
         raise HTTPException(status_code=500, detail="Model not loaded")
     
-    start_time = datetime.now().timestamp()
-    MetricsHandler.record_prediction_request()
-    
     try:
         # Convert to DataFrame
         df = pd.DataFrame([property_data.model_dump()])
@@ -80,14 +76,6 @@ async def predict_sale_probability(property_data: Property, background_tasks: Ba
             prediction
         )
         
-        # Record metrics
-        MetricsHandler.record_prediction_time(start_time)
-        if hasattr(property_data, 'actual_sale'):
-            MetricsHandler.record_prediction_accuracy(
-                property_data.actual_sale, 
-                prediction
-            )
-        
         return {
             "sale_probability": prediction,
             "prediction_date": datetime.now(),
@@ -96,7 +84,6 @@ async def predict_sale_probability(property_data: Property, background_tasks: Ba
     
     except Exception as e:
         logger.error(f"Error making prediction: {str(e)}")
-        MetricsHandler.record_prediction_error(type(e).__name__)
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
 @router.post("/predict/batch", response_model=BatchPredictionResponse)
@@ -130,11 +117,6 @@ async def predict_batch(batch_request: BatchPropertyRequest, background_tasks: B
             predictions
         )
         
-        # Record metrics
-        start_time = datetime.now().timestamp()
-        MetricsHandler.record_batch_prediction_request()
-        MetricsHandler.record_batch_prediction_time(start_time)
-        
         return {
             "predictions": predictions,
             "prediction_date": datetime.now(),
@@ -143,7 +125,6 @@ async def predict_batch(batch_request: BatchPropertyRequest, background_tasks: B
     
     except Exception as e:
         logger.error(f"Error making batch predictions: {str(e)}")
-        MetricsHandler.record_batch_prediction_error(type(e).__name__)
         raise HTTPException(status_code=500, detail=f"Batch prediction error: {str(e)}")
 
 # Helper functions

@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
 import sys
-from prometheus_client import make_asgi_app
 
 # Add project root to path to allow imports from src
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -40,9 +39,6 @@ async def root():
         "documentation": "/docs",
         "api_endpoints": "/api"
     }
-
-metrics_app = make_asgi_app()
-app.mount("/metrics", metrics_app)
 
 if __name__ == "__main__":
     # Run the API server
