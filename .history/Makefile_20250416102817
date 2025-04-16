@@ -1,4 +1,4 @@
-.PHONY: start-backend start-frontend start-all docker-up docker-build docker-down test-backend test-frontend clean
+.PHONY: start-backend start-frontend start-all docker-up docker-build docker-down test-backend test-frontend
 
 # Local Development
 start-backend:

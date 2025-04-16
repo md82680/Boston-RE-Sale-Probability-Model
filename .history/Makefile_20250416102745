@@ -1,4 +1,4 @@
-.PHONY: start-backend start-frontend start-all docker-up docker-build docker-down test-backend test-frontend clean
+.PHONY: start-backend start-frontend start-all docker-up docker-build docker-down test-backend test-frontend
 
 # Local Development
 start-backend:
@@ -26,9 +26,3 @@ test-backend:
 
 test-frontend:
 	cd frontend && npm test
-
-# Cleanup
-clean:
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type d -name "node_modules" -exec rm -rf {} +
-
