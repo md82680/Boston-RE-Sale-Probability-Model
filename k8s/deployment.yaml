@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: real-estate-predictor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: real-estate-predictor
+  template:
+    metadata:
+      labels:
+        app: real-estate-predictor
+    spec:
+      containers:
+      - name: frontend
+        image: gcr.io/[YOUR-PROJECT-ID]/frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://backend-service:8000"
+      
+      - name: backend
+        image: gcr.io/[YOUR-PROJECT-ID]/backend:latest
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: real-estate-predictor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: real-estate-predictor 
