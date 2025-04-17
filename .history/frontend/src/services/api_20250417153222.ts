@@ -12,12 +12,8 @@ export async function predictSaleProbability(property: Property): Promise<Predic
   });
 
   if (!response.ok) {
-    try {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to get prediction');
-    } catch (e) {
-      throw new Error('Failed to get prediction');
-    }
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to get prediction');
   }
 
   return response.json();
