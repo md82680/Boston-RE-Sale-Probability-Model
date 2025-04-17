@@ -1,0 +1,45 @@
+.PHONY: start-backend start-frontend start-all docker-up docker-build docker-down test-backend test-frontend test-all setup-dev
+
+# Local Development
+start-backend:
+	cd backend && uvicorn api.main:app --reload --port 8000
+
+start-frontend:
+	cd frontend && npm start
+
+start-all:
+	make -j 2 start-backend start-frontend
+
+# Docker Commands
+docker-up:
+	docker-compose up
+
+docker-build:
+	docker-compose up --build
+
+docker-down:
+	docker-compose down
+
+# Development Setup
+setup-dev:
+	pip install -r backend/requirements-dev.txt
+
+# Testing
+test-backend:
+	cd backend && pytest tests/ -v
+
+test-backend-cov:
+	cd backend && pytest tests/ --cov=api --cov-report=term-missing
+
+test-backend-cov-html:
+	cd backend && pytest tests/ --cov=api --cov-report=html
+
+test-frontend:
+	cd frontend && npm test
+
+test-frontend-cov:
+	cd frontend && npm test -- --coverage
+
+test-all:
+	make -j 2 test-backend test-frontend
+
