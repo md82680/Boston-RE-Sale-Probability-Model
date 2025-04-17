@@ -19,15 +19,10 @@ COPY . .
 RUN mkdir -p logs marketing monitoring/metrics visualizations/performance
 
 # Create monitoring directories
-RUN mkdir -p /app/monitoring/metrics
-
-# Ensure models directory exists and copy models
-RUN mkdir -p /app/models
-COPY models/* /app/models/
+RUN mkdir -p /app/monitoring/metrics /app/models
 
 # Set permissions
 RUN chmod -R 755 /app/monitoring/metrics
-RUN chmod -R 755 /app/models
 
 # Expose the API port
 EXPOSE 8000

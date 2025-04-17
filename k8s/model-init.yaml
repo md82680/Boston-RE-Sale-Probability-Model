@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-init-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: model-init
+        image: gcr.io/real-estate-sell-probability/backend:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          cp -r /app/models/* /mnt/models/
+          chmod -R 755 /mnt/models/
+        volumeMounts:
+        - name: ml-models
+          mountPath: /mnt/models
+      restartPolicy: Never
+      volumes:
+      - name: ml-models
+        persistentVolumeClaim:
+          claimName: ml-model-storage-claim 
