@@ -15,9 +15,6 @@ from .models import Property, BatchPropertyRequest, PredictionResponse, BatchPre
 # Add project root to path to allow imports from src
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Create logs directory if it doesn't exist
-os.makedirs("logs", exist_ok=True)
-
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,

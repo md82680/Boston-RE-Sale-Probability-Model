@@ -8,9 +8,6 @@ import json
 import logging
 import matplotlib.pyplot as plt
 
-# Create logs directory if it doesn't exist
-os.makedirs("logs", exist_ok=True)
-
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,

@@ -32,7 +32,7 @@ jobs:
       - name: Run backend tests
         run: |
           cd backend
-          make test-backend-cov
+          make test-badkendcov
           
       - name: Set up Node.js
         uses: actions/setup-node@v4
