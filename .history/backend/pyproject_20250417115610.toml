@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+python_classes = ["Test*"]
+addopts = "-v --cov=api --cov-report=term-missing"
+markers = [
+    "api: mark test as API test",
+    "model: mark test as model test"
+] 

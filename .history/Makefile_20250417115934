@@ -1,0 +1,29 @@
+.PHONY: start-backend start-frontend start-all docker-up docker-build docker-down test-backend test-frontend
+
+# Local Development
+start-backend:
+	cd backend && uvicorn api.main:app --reload --port 8000
+
+start-frontend:
+	cd frontend && npm start
+
+start-all:
+	make -j 2 start-backend start-frontend
+
+# Docker Commands
+docker-up:
+	docker-compose up
+
+docker-build:
+	docker-compose up --build
+
+docker-down:
+	docker-compose down
+
+# Testing
+test-backend:
+	cd backend && pytest
+
+test-frontend:
+	cd frontend && npm test
+
