@@ -133,20 +133,13 @@ jobs:
           sed -i "s|us-east1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/docker-repo/backend:latest|us-east1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/docker-repo/backend:${{ github.sha }}|g" k8s/deployment.yaml
           sed -i "s|us-east1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/docker-repo/frontend:latest|us-east1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/docker-repo/frontend:${{ github.sha }}|g" k8s/deployment.yaml
           
-          # Apply core Kubernetes manifests
-          kubectl apply -f k8s/deployment.yaml
+          # Apply Kubernetes manifests
+          # First apply everything except ServiceMonitor
+          cat k8s/deployment.yaml | grep -v "kind: ServiceMonitor" -A 1000 | grep -v "^---" -B 1000 | kubectl apply -f -
           
-          # Apply monitoring configuration
-          kubectl apply -f k8s/monitoring-config.yaml
-          
-          # Try to apply monitoring resources, but don't fail if they don't exist
-          if kubectl api-resources | grep -q servicemonitors; then
-            echo "Applying monitoring resources..."
-            kubectl apply -f k8s/monitoring.yaml || true
-          else
-            echo "ServiceMonitor CRD not installed. Skipping monitoring configuration."
-            echo "To enable monitoring, install Prometheus Operator: https://github.com/prometheus-operator/prometheus-operator"
-          fi
+          # Notify about missing ServiceMonitor CRD
+          echo "Note: ServiceMonitor CRD is not installed. Skipping ServiceMonitor creation."
+          echo "To enable monitoring, install Prometheus Operator: https://github.com/prometheus-operator/prometheus-operator"
           
       - name: Verify deployment
         run: |

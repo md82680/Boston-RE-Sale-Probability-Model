@@ -1,0 +1,16 @@
+# Prometheus monitoring configuration
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: real-estate-predictor-monitor
+spec:
+  selector:
+    matchLabels:
+      app: real-estate-predictor
+  endpoints:
+  - port: metrics
+    interval: 15s
+    path: /metrics
+  - port: ml-metrics
+    interval: 30s
+    path: /metrics/model-performance 

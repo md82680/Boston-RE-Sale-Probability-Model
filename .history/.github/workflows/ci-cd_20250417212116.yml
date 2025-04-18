@@ -136,9 +136,6 @@ jobs:
           # Apply core Kubernetes manifests
           kubectl apply -f k8s/deployment.yaml
           
-          # Apply monitoring configuration
-          kubectl apply -f k8s/monitoring-config.yaml
-          
           # Try to apply monitoring resources, but don't fail if they don't exist
           if kubectl api-resources | grep -q servicemonitors; then
             echo "Applying monitoring resources..."

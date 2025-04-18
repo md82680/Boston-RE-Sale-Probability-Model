@@ -82,4 +82,19 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 80 
+        averageUtilization: 80
+
+---
+# Add ConfigMap for monitoring configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+      - job_name: 'real-estate-predictor'
+        static_configs:
+          - targets: ['localhost:9090'] 
